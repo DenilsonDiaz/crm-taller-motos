@@ -31,12 +31,12 @@ class SectorSeeder extends Seeder
                 "supervisor_id" => $sup->id,
             ]);
             $list = [
-                ["Aceite para motor 4T 20W50", 65, false, false],
-                ["Bujía estándar para motocicleta", 35, false, false],
-                ["Kit de arrastre con instalación", 285, true, false],
-                ["Instalación de kit de arrastre", 100, false, true],
-                ["Pastillas de freno delanteras", 90, false, false],
-                ["Servicio de mantenimiento preventivo", 175, false, true],
+                ["Aceite Honda 20W50 premium 1 litro", 60, false, false],
+                ["Bujía Honda 31918-HM5-630", 39.98, false, false],
+                ["Kit de cilindro Honda CBF125 Stunner", 690, true, false],
+                ["Mano de obra de instalación de cilindro", 100, false, true],
+                ["Pastillas delanteras Honda 06455-KPP-N01", 221.10, false, false],
+                ["Servicio de mantenimiento express", 295, false, false],
             ];
             $products = [];
             foreach ($list as [$n, $p, $required, $labor]) {
@@ -83,7 +83,7 @@ class SectorSeeder extends Seeder
                         "Consulta de mantenimiento",
                         "Cambio de aceite",
                         "Cotización de frenos",
-                        "Cambio de transmisión",
+                        "Cambio de cilindro",
                         "Mantenimiento completo",
                         "Revisión de repuestos",
                     ][$i],

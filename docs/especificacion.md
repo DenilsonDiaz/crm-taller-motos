@@ -18,7 +18,7 @@ El panel Laravel es monolítico Blade con Eloquent y autenticación basada en Br
 - La regla del sector usa metadatos de producto, no textos que el usuario puede renombrar.
 
 ## Regla propia del taller
-productos requiere_instalacion boolean por defecto false; es_instalacion boolean por defecto false. Estas columnas adicionales no afectan el contrato ni la semilla común. Para ganar una oportunidad con al menos un producto requiere_instalacion=true debe existir una línea con producto es_instalacion=true. Se valida dentro de la transacción de cierre. SectorSeeder carga kit de arrastre que requiere instalación y mano de obra que satisface la regla; VerificacionSeeder deja ambos flags en false.
+productos requiere_instalacion boolean por defecto false; es_instalacion boolean por defecto false. Estas columnas adicionales no afectan el contrato ni la semilla común. Para ganar una oportunidad con al menos un producto requiere_instalacion=true debe existir una línea con producto es_instalacion=true. Se valida dentro de la transacción de cierre. SectorSeeder carga kit de cilindro que requiere instalación y mano de obra que satisface la regla; VerificacionSeeder deja ambos flags en false.
 Dado un kit marcado y una oportunidad en negociación, cuando se intenta ganar sin mano de obra, entonces devuelve 422 con error de etapa y no cambia etapa, cierre ni historial. Cuando se agrega mano de obra y se repite, gana una sola vez. La semilla común conserva todas sus cifras.
 
 ## Criterios de aceptación
@@ -827,3 +827,27 @@ Por qué S7 importa más en este proyecto
 La SPA guarda el token en LocalStorage. Cualquier script que logre ejecutarse en la página puede 
 leerlo y actuar en nombre del vendedor. Escapar el texto es lo que impide que el nombre de un cliente 
 se convierta en código.
+
+## Decisiones y alternativas descartadas
+Esta revisión documental conserva las reglas de spec-v1 y precisa sus motivos; no representa el cambio docente pendiente.
+
+| Decisión | Alternativa descartada | Motivo |
+|---|---|---|
+| Avance de una etapa; perder desde cualquiera abierta | Saltos libres y retrocesos | Seguimiento fácil de explicar y compatible con la pérdida en propuesta de la semilla. |
+| Transferir abiertas y actividades al reasignar | Transferir también ventas cerradas | Conservar crédito e informes históricos del vendedor que cerró. |
+| Liberar solo sin abiertas ni actividades pendientes | Liberar siempre | Evitar dejar trabajo sin responsable. |
+| Cuenta desactivada conserva cartera hasta reasignación explícita | Liberación automática | Evitar perder responsabilidad comercial sin revisión del encargado. |
+| Solo campos permitidos | Usar directamente todo el cuerpo JSON | Impedir que el cliente cambie dueño, precio o etapa inicial. |
+| Metadatos de instalación | Buscar palabras en el nombre | Renombrar un producto no debe evadir la regla del taller. |
+| UTC y mes de Guatemala | Fecha local del servidor | Las computadoras pueden usar husos distintos. |
+
+## Modelo y lugar donde se cumple cada regla
+| Tabla | Relación principal | Restricción o servicio |
+|---|---|---|
+| users | Vendedor pertenece a supervisor | FK, enum y CHECK; PanelController, PanelAccess y middleware JWT verifican rol/activo. |
+| productos | Catálogo referenciado por líneas | Nombre único, DECIMAL positivo; validación en panel; desactivación lógica. |
+| clientes | Vendedor opcional | NIT nullable único y teléfono único/check; Identidad y domain.js normalizan; Cartera/transaction bloquean para cupo. |
+| oportunidades | Cliente y vendedor | CHECK de cierre/motivo; service.js valida transiciones y propiedad; Cartera transfiere abiertas. |
+| oportunidad_productos | Oportunidad y producto | Par único, cantidad y precio con CHECK; service.js copia precio y bloquea oportunidad. |
+| historial_etapas | Oportunidad y usuario | Misma transacción que creación/transición; no existe ruta para editarlo. |
+| actividades | Cliente y vendedor | Enum y boolean; ISO con zona validado en API; vistas convierten a Guatemala. |

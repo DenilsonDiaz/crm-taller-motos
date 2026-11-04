@@ -1443,7 +1443,7 @@
             "exec": [
               "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
               "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
-              "const p=pm.response.json().find(p=>p.nombre===\"Instalación de kit de arrastre\");if(p)pm.collectionVariables.set(\"instalacionId\",p.id);"
+              "const p=pm.response.json().find(p=>p.nombre===\"Mano de obra de instalación de cilindro\");if(p)pm.collectionVariables.set(\"instalacionId\",p.id);"
             ]
           }
         }

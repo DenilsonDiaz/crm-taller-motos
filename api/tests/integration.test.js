@@ -10,6 +10,7 @@ test(
     const pool = createPool(),
       svc = createService(pool);
     let client, op;
+    const extras = [];
     const actor = (
       await pool.execute("SELECT id FROM users WHERE email='valeria@crm.test'")
     )[0][0]?.id;
@@ -27,6 +28,71 @@ test(
         43,
         "Ejecute en una base recién cargada solo con VerificacionSeeder.",
       );
+      const expected = {
+        users: 7,
+        productos: 5,
+        clientes: 21,
+        oportunidades: 11,
+        actividades: 4,
+      };
+      for (const [table, n] of Object.entries(expected)) {
+        // Identificadores del código, nunca de una petición.
+        const [[count]] = await pool.execute(
+          `SELECT COUNT(*) AS n FROM ${table}`,
+        );
+        assert.equal(Number(count.n), n, table);
+      }
+      const [[carlos]] = await pool.execute(
+        "SELECT id FROM users WHERE email='carlos@crm.test'",
+      );
+      const capacity = await Promise.allSettled([
+        svc.createClient(carlos.id, {
+          nombre: "Temporal cupo A",
+          nit: "CF",
+          telefono: "49999886",
+        }),
+        svc.createClient(carlos.id, {
+          nombre: "Temporal cupo B",
+          nit: "CF",
+          telefono: "49999887",
+        }),
+      ]);
+      extras.push(
+        ...capacity
+          .filter((x) => x.status === "fulfilled")
+          .map((x) => x.value.id),
+      );
+      assert.equal(
+        extras.length,
+        1,
+        "Con nueve clientes, de dos altas simultáneas solo una puede pasar.",
+      );
+      assert.equal(
+        capacity.find((x) => x.status === "rejected").reason.status,
+        409,
+      );
+      const duplicates = await Promise.allSettled([
+        svc.createClient(actor, {
+          nombre: "Temporal duplicado A",
+          nit: "CF",
+          telefono: "49999885",
+        }),
+        svc.createClient(actor, {
+          nombre: "Temporal duplicado B",
+          nit: "CF",
+          telefono: "+502 4999-9885",
+        }),
+      ]);
+      const createdDuplicates = duplicates.filter(
+        (x) => x.status === "fulfilled",
+      );
+      extras.push(...createdDuplicates.map((x) => x.value.id));
+      assert.equal(createdDuplicates.length, 1);
+      assert.equal(
+        duplicates.find((x) => x.status === "rejected").reason.code,
+        "ER_DUP_ENTRY",
+      );
+      assert.deepEqual(await svc.clients(actor, "' OR 1=1 --"), []);
       const [insert] = await pool.execute(
         "INSERT INTO clientes(nombre,telefono,created_at,updated_at)VALUES('Prueba simultánea','49999888',UTC_TIMESTAMP(),UTC_TIMESTAMP())",
       );
@@ -56,6 +122,8 @@ test(
       const d = await svc.detail(actor, op);
       assert.equal(d.historial.length, 2);
     } finally {
+      for (const id of extras)
+        await pool.execute("DELETE FROM clientes WHERE id=?", [id]);
       if (op) await pool.execute("DELETE FROM oportunidades WHERE id=?", [op]);
       if (client)
         await pool.execute("DELETE FROM clientes WHERE id=?", [client]);

@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import { createApp } from "../src/app.js";
 const env = {
   JWT_SECRET: "test-only-".repeat(6),
@@ -13,7 +12,7 @@ const users = [
     id: 4,
     name: "Vendedor prueba",
     email: "seller@example.test",
-    password: await bcrypt.hash("test-only-password", 4),
+    password: "$2y$04$cX8ScrU0g99MDdlUfwyXGeFF8LPnrzz1mHee3BDVBF/0kYSqWJE/G",
     rol: "vendedor",
     activo: 1,
   },
@@ -21,7 +20,7 @@ const users = [
     id: 1,
     name: "Administrador",
     email: "admin@example.test",
-    password: await bcrypt.hash("test-only-password", 4),
+    password: "$2y$04$cX8ScrU0g99MDdlUfwyXGeFF8LPnrzz1mHee3BDVBF/0kYSqWJE/G",
     rol: "administrador",
     activo: 1,
   },
