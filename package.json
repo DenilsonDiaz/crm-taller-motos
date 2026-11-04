@@ -1,0 +1,11 @@
+{
+  "name": "crm-taller-motos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "frontend": "node scripts/serve-frontend.js",
+    "api": "npm --prefix api run dev",
+    "test": "npm --prefix api test",
+    "build:panel": "npm --prefix laravel run build"
+  }
+}

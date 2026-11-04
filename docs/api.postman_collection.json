@@ -1,0 +1,1549 @@
+{
+  "info": {
+    "name": "MotoGest CRM · contrato y errores",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecute en una base de demostración con ambas semillas. Las peticiones 05 en adelante escriben datos y la última gana una cotización del taller. Recargue solo su base de pruebas antes de repetir. Para cifras de defensa use únicamente VerificacionSeeder y ejecute las lecturas correspondientes. Integre además pruebas concurrentes de api/tests."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Acceso del vendedor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"correo\": \"valeria@crm.test\", \"clave\": \"Ventas2026\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.collectionVariables.set(\"token\",pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Catálogo activo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/productos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "productos"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const p=pm.response.json().find(p=>p.nombre===\"Plan básico\"); if(p)pm.collectionVariables.set(\"productoId\",p.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Mi cartera y búsqueda",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes?q=",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const c=pm.response.json()[0];if(c)pm.collectionVariables.set(\"clienteId\",c.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Disponibles sin contacto",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/disponibles",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "disponibles"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const rows=pm.response.json();pm.test(\"No expone contacto\",()=>rows.forEach(r=>pm.expect(Object.keys(r).sort()).to.eql([\"id\",\"nombre\"])));if(rows[0])pm.collectionVariables.set(\"disponibleId\",rows[0].id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Crear cliente de prueba",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nombre\": \"Cliente Postman {{$timestamp}}\", \"nit\": \"CF\", \"telefono\": \"{{telefonoPrueba}}\", \"correo\": \"\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.collectionVariables.set(\"nuevoClienteId\",pm.response.json().id);"
+            ]
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"telefonoPrueba\",\"49\"+String(Date.now()).slice(-6));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Leer cliente",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/{{nuevoClienteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "{{nuevoClienteId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Editar cliente",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/{{nuevoClienteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "{{nuevoClienteId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nombre\": \"Cliente Postman editado\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Tomar disponible",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/{{disponibleId}}/tomar",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "{{disponibleId}}",
+            "tomar"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Registrar seguimiento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/{{nuevoClienteId}}/actividades",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "{{nuevoClienteId}}",
+            "actividades"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tipo\": \"llamada\", \"descripcion\": \"Confirmar información de la cotización\", \"vence_en\": \"2030-01-15T09:00:00-06:00\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.collectionVariables.set(\"actividadId\",pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Listar actividades",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/actividades?estado=pendiente",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "actividades"
+          ],
+          "query": [
+            {
+              "key": "estado",
+              "value": "pendiente"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Completar actividad",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/actividades/{{actividadId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "actividades",
+            "{{actividadId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"completada\": true}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Listar cotizaciones",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades?etapa=prospecto",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades"
+          ],
+          "query": [
+            {
+              "key": "etapa",
+              "value": "prospecto"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Crear cotización",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"cliente_id\": {{nuevoClienteId}}, \"titulo\": \"Cotización Postman\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.collectionVariables.set(\"oportunidadId\",pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Leer detalle",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{oportunidadId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{oportunidadId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Editar título",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{oportunidadId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{oportunidadId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"titulo\": \"Cotización revisada\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 Agregar producto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{oportunidadId}}/productos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{oportunidadId}}",
+            "productos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"producto_id\": {{productoId}}, \"cantidad\": 2}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.collectionVariables.set(\"lineaId\",pm.response.json().productos[0].id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 Cambiar cantidad",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{oportunidadId}}/productos/{{lineaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{oportunidadId}}",
+            "productos",
+            "{{lineaId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"cantidad\": 3}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 Quitar producto",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{oportunidadId}}/productos/{{lineaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{oportunidadId}}",
+            "productos",
+            "{{lineaId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 Avanzar etapa",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{oportunidadId}}/etapa",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{oportunidadId}}",
+            "etapa"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"etapa\": \"calificado\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 Resumen octubre",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/reportes/resumen?mes=2026-10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reportes",
+            "resumen"
+          ],
+          "query": [
+            {
+              "key": "mes",
+              "value": "2026-10"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const d=pm.response.json();pm.test(\"Semilla: ventas y precio histórico\",()=>{pm.expect(d.ventas).to.eql(2);pm.expect(d.total).to.eql(9250);pm.expect(d.pronostico).to.eql(2512.88);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 Credenciales incorrectas",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"correo\": \"valeria@crm.test\", \"clave\": \"incorrecta\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 Administrador rechazado por API",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"correo\": \"admin@crm.test\", \"clave\": \"Ventas2026\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 Validación de NIT",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nombre\": \"Prueba\", \"nit\": \"INVALIDO\", \"telefono\": \"49888777\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 Duplicado normalizado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nombre\": \"Prueba duplicada\", \"nit\": \"452 1817-k\", \"telefono\": \"+502 5555-1234\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 Recurso inexistente",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/999999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "999999999"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 Fecha ambigua",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes/{{nuevoClienteId}}/actividades",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes",
+            "{{nuevoClienteId}}",
+            "actividades"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tipo\": \"tarea\", \"descripcion\": \"Fecha sin zona\", \"vence_en\": \"2030-01-01T10:00\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 Filtro inexistente",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades?etapa=otra",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades"
+          ],
+          "query": [
+            {
+              "key": "etapa",
+              "value": "otra"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 Inyección se trata como búsqueda",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/clientes?q=%27%20OR%201%3D1%20--",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "clientes"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "%27%20OR%201%3D1%20--"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.test(\"No devuelve toda la cartera\",()=>pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 Acceso vendedor del taller",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"correo\": \"asesor@motogest.test\", \"clave\": \"Ventas2026\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "pm.collectionVariables.set(\"token\",pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 Buscar cotización del taller",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const o=pm.response.json().find(o=>o.etapa===\"negociacion\");if(o)pm.collectionVariables.set(\"sectorOpId\",o.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "31 Leer líneas del taller",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{sectorOpId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{sectorOpId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const d=pm.response.json();const l=d.productos.find(p=>p.nombre.includes(\"Instalación\"));if(l)pm.collectionVariables.set(\"sectorLineaId\",l.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32 Quitar instalación para probar regla",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{sectorOpId}}/productos/{{sectorLineaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{sectorOpId}}",
+            "productos",
+            "{{sectorLineaId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "33 Regla propia rechaza ganar sin instalación",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{sectorOpId}}/etapa",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{sectorOpId}}",
+            "etapa"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"etapa\": \"ganada\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "34 Buscar servicio de instalación",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/productos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "productos"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
+              "const p=pm.response.json().find(p=>p.nombre===\"Instalación de kit de arrastre\");if(p)pm.collectionVariables.set(\"instalacionId\",p.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "35 Restaurar instalación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{sectorOpId}}/productos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{sectorOpId}}",
+            "productos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"producto_id\": {{instalacionId}}, \"cantidad\": 1}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 Ganar con instalación",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oportunidades/{{sectorOpId}}/etapa",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oportunidades",
+            "{{sectorOpId}}",
+            "etapa"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"etapa\": \"ganada\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
