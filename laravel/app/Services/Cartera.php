@@ -70,7 +70,10 @@ class Cartera
                 }
                 if (
                     $client->vendedor_id !== $target &&
-                    Cliente::where("vendedor_id", $target)->count() >= 10
+                    Cliente::where("vendedor_id", $target)
+                        ->lockForUpdate()
+                        ->get(["id"])
+                        ->count() >= 10
                 ) {
                     Identidad::error(
                         "vendedor_id",

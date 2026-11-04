@@ -1,0 +1,47 @@
+<?php
+return [
+    "regex" => "Debe ingresar un formato válido en :attribute.",
+    "required" => "Debe ingresar :attribute.",
+    "string" => "Debe ingresar texto en :attribute.",
+    "email" => "Debe ingresar un correo válido en :attribute.",
+    "confirmed" => "La confirmación de :attribute no coincide.",
+    "integer" => "Debe ingresar un número entero en :attribute.",
+    "boolean" => "Debe seleccionar una opción válida en :attribute.",
+    "in" => "Debe seleccionar una opción válida en :attribute.",
+    "unique" => "Ya existe un registro con ese valor en :attribute.",
+    "numeric" => "Debe ingresar un número en :attribute.",
+    "decimal" => "Debe ingresar como máximo :decimal decimales en :attribute.",
+    "date_format" => "Debe ingresar :attribute con el formato :format.",
+    "max" => [
+        "string" => "Debe ingresar como máximo :max caracteres en :attribute.",
+        "numeric" =>
+            "Debe ingresar un valor menor o igual a :max en :attribute.",
+    ],
+    "min" => [
+        "string" => "Debe ingresar al menos :min caracteres en :attribute.",
+        "numeric" => "Debe ingresar al menos :min en :attribute.",
+    ],
+    "gt" => [
+        "numeric" => "Debe ingresar un valor mayor que :value en :attribute.",
+    ],
+    "attributes" => [
+        "email" => "su correo",
+        "password" => "su contraseña",
+        "name" => "su nombre",
+        "nombre" => "el nombre",
+        "nit" => "el NIT",
+        "telefono" => "el teléfono",
+        "correo" => "el correo",
+        "rol" => "el rol",
+        "activo" => "el estado",
+        "supervisor_id" => "el supervisor",
+        "vendedor_id" => "el vendedor",
+        "precio" => "el precio",
+        "mes" => "el mes",
+        "etapa" => "la etapa",
+        "vendedor" => "el vendedor",
+        "q" => "la búsqueda",
+        "requiere_instalacion" => "la necesidad de instalación",
+        "es_instalacion" => "el tipo de servicio",
+    ],
+];

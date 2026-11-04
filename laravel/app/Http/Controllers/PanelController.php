@@ -233,7 +233,12 @@ class PanelController extends Controller
             "nombre" => ["required", "string", "max:150"],
             "nit" => ["required", "string", "max:60"],
             "telefono" => ["required", "string", "max:60"],
-            "correo" => ["nullable", "email", "max:150"],
+            "correo" => [
+                "nullable",
+                "string",
+                "max:150",
+                'regex:/^[^\s@]+@[^\s@]+\.[^\s@]+$/u',
+            ],
             "vendedor_id" => ["nullable", "integer"],
         ]);
         $d["nit"] = Identidad::nit($d["nit"]);
