@@ -1,0 +1,23 @@
+{
+  "name": "motogest-api",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --env-file=.env --watch src/server.js",
+    "start": "node --env-file=.env src/server.js",
+    "test": "node --test",
+    "test:integration": "node --env-file=.env --test tests/integration.test.js",
+    "check": "node --check src/server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mysql2": "^3.15.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5"
+  }
+}
