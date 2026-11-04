@@ -1,0 +1,12 @@
+**/node_modules/
+**/vendor/
+**/.env
+**/.env.*
+!**/.env.example
+laravel/bootstrap/cache/*.php
+laravel/storage/**/*.log
+laravel/storage/framework/cache/data/*
+laravel/storage/framework/sessions/*
+laravel/storage/framework/views/*
+laravel/public/build/
+.DS_Store
