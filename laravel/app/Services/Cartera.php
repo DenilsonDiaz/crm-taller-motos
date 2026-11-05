@@ -82,14 +82,18 @@ class Cartera
                 }
             }
             if ($client->exists && $client->vendedor_id !== $target) {
+                // El vendedor y el cliente ya están bloqueados. FOR UPDATE lee
+                // datos actuales, no la instantánea de la primera consulta.
                 if (
                     !$target &&
                     (Oportunidad::where("cliente_id", $client->id)
                         ->whereNotIn("etapa", ["ganada", "perdida"])
-                        ->exists() ||
+                        ->lockForUpdate()
+                        ->first(["id"]) !== null ||
                         Actividad::where("cliente_id", $client->id)
                             ->where("completada", false)
-                            ->exists())
+                            ->lockForUpdate()
+                            ->first(["id"]) !== null)
                 ) {
                     Identidad::error(
                         "vendedor_id",
