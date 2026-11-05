@@ -24,6 +24,7 @@ const state = {
   summary: null,
   detail: null,
   editClient: null,
+  formDraft: null,
   notice: "",
   error: "",
   loading: false,
@@ -57,6 +58,19 @@ function render() {
   else if (route === "actividades") content = view.activities(state);
   else content = '<div class="empty">La pantalla solicitada no existe.</div>';
   root.innerHTML = view.shell(state, content);
+  if (state.formDraft) {
+    for (const field of state.formDraft.fields) {
+      const input = document.getElementById(field.id);
+      if (input) {
+        input.value = field.value;
+        input.checked = field.checked;
+      }
+    }
+    root.querySelectorAll("details").forEach((details, i) => {
+      details.open = state.formDraft.details[i];
+    });
+    state.formDraft = null;
+  }
 }
 function logout(message = "") {
   version++;
@@ -73,6 +87,7 @@ function logout(message = "") {
     summary: null,
     detail: null,
     editClient: null,
+    formDraft: null,
     error: message,
     notice: "",
     loading: false,
@@ -278,6 +293,7 @@ root.addEventListener("click", async (event) => {
   if (busy) return;
   busy = true;
   button.disabled = true;
+  const actionSession = state.session;
   try {
     if (action === "take")
       await api(`/clientes/${button.dataset.id}/tomar`, { method: "POST" });
@@ -301,6 +317,19 @@ root.addEventListener("click", async (event) => {
     state.notice = "Operación realizada correctamente.";
     await load();
   } catch (error) {
+    // Un 401 ya cerró la sesión. No restaure datos de la sesión anterior.
+    if (!state.session || state.session !== actionSession) return;
+    // Estado temporal solo para este render; no se guarda en localStorage.
+    state.formDraft = {
+      fields: [...root.querySelectorAll("input, select, textarea")]
+        .filter((input) => input.id && input.type !== "password" && input.type !== "file")
+        .map((input) => ({
+          id: input.id,
+          value: input.value,
+          checked: input.checked,
+        })),
+      details: [...root.querySelectorAll("details")].map((details) => details.open),
+    };
     state.error =
       error.message +
       (error.fields ? " " + Object.values(error.fields).join(" ") : "");
