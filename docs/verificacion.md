@@ -103,3 +103,99 @@ Use la base desechable y conserve resultados reales y fecha en este archivo.
 | 3 | El servicio de asignación del panel contaba con lectura consistente después de haber leído el cliente. En REPEATABLE READ podía reutilizar una instantánea anterior al bloqueo del vendedor. | Revisión del orden de lecturas y bloqueo frente al caso de dos asignaciones simultáneas con nueve clientes; no se afirmó una carrera ejecutada. | Se cambió el conteo por una lectura actual SELECT de ids con lockForUpdate antes de contar. Commit 99f6c1a. La prueba de carrera real queda pendiente. |
 
 Adicionalmente se restauró byte por byte la migración original de users, que el formateador había modificado, para respetar la instrucción de extenderla con otra migración. Esa restauración está en 99f6c1a. No se fabricaron errores de estudiantes ni resultados de Postman.
+
+## Corrección A: liberación concurrente de clientes
+
+Revisión del 4 de noviembre de 2026. No cambia el requisito de liberación de la especificación.
+
+- Causa confirmada por revisión de código: `Cartera::asignar()` lee primero el cliente sin bloqueo y establece una instantánea en REPEATABLE READ. Después puede esperar el bloqueo del vendedor. Las consultas ordinarias `exists()` de oportunidades abiertas y actividades pendientes podían seguir leyendo esa instantánea, aunque la API hubiera confirmado trabajo antes de que el panel obtuviera el bloqueo.
+- Corrección: ambas comprobaciones usan `lockForUpdate()->first(['id'])`, una lectura actual de una fila, dentro de la misma transacción. Se conservan los bloqueos de vendedores por id y después del cliente; las comprobaciones del trabajo se hacen a continuación. La API ya bloquea al vendedor antes de crear oportunidades, crear actividades o modificar su estado; no se modificó la API ni el aislamiento global.
+- Regresión: `laravel/tests/Feature/LiberacionConcurrenteTest.php`, con dos casos independientes (oportunidad abierta y actividad pendiente). Un proceso Node invoca el servicio real de la API; detiene su COMMIT hasta observar en `performance_schema.data_lock_waits` que la conexión del panel está esperando a esa conexión API. Después confirma. El panel debe rechazar la liberación con el mensaje esperado, conservar al vendedor y mantener el trabajo confirmado. También comprueba que, retirado/completado el trabajo temporal, sí se puede liberar.
+- La prueba no utiliza `RefreshDatabase`, no ejecuta migraciones ni semillas, y elimina únicamente sus propias filas temporales. Las cuentas y hashes temporales los crea Laravel. Las credenciales del proceso Node se transmiten por stdin, no como argumentos ni mensajes.
+
+### Verificación ejecutada en esta revisión
+
+| Comprobación | Resultado real |
+|---|---|
+| `php -l app/Services/Cartera.php` y `php -l tests/Feature/LiberacionConcurrenteTest.php`, desde Laravel | Ambos sin errores de sintaxis. |
+| Código Node devuelto por `apiWorker()`, comprobado con `node --input-type=module --check` | Sin errores de sintaxis; no ejecuta operaciones de base. |
+| `php vendor/bin/phpunit --do-not-cache-result`, desde Laravel | 7 aprobadas, 14 aserciones; los 2 casos concurrentes omitidos. |
+| Regresión con MySQL 8.4 y Node real | En la revisión inicial del asistente quedó omitida. Posteriormente el usuario informó la ejecución aprobada que se registra a continuación. |
+
+### Ejecución de la regresión A realizada por el usuario
+
+Resultado real comunicado por el usuario: `LiberacionConcurrenteTest` ejecutado en Windows, con PHP 8.4.0, MySQL 8.4.13 y la base exclusiva `crm_taller_motos_pruebas`.
+
+```text
+OK (2 tests, 26 assertions)
+Tiempo: 2.280 segundos.
+```
+
+Ejecución realizada por el usuario, no por el asistente. El resultado corresponde a los dos casos de liberación concurrente (oportunidad abierta y actividad pendiente); no constituye una comprobación de todo el sistema. La comparación con el código anterior `exists()` sigue pendiente.
+
+### Cómo repetir la regresión en una base exclusiva
+
+1. Disponga de una base **exclusiva de pruebas**, con nombre terminado en `_pruebas`, y con las migraciones del proyecto ya aplicadas mediante Laravel. No requiere semillas. No use ni reinicie la base de desarrollo. El usuario MySQL usado para esta prueba debe tener permisos de datos solo sobre esa base y permiso SELECT sobre `performance_schema.data_lock_waits` y `performance_schema.threads` para observar la espera. Un administrador de MySQL debe preparar esos permisos si faltan.
+2. Use las dependencias PHP y Node ya instaladas. Desde una terminal PowerShell nueva, en `laravel`, configure los datos de esa base. El diálogo de credenciales evita escribir la contraseña en el comando:
+
+```powershell
+$env:TEST_DB_HOST='127.0.0.1'
+$env:TEST_DB_PORT='3306'
+$env:TEST_DB_DATABASE='crm_taller_motos_pruebas'
+$credencial=Get-Credential -Message 'Cuenta MySQL exclusiva de pruebas'
+$env:TEST_DB_USERNAME=$credencial.UserName
+$env:TEST_DB_PASSWORD=$credencial.GetNetworkCredential().Password
+$env:RUN_CONCURRENCY_TESTS='1'
+php vendor/bin/phpunit --do-not-cache-result --filter LiberacionConcurrenteTest
+Remove-Item Env:TEST_DB_PASSWORD
+Remove-Item Env:RUN_CONCURRENCY_TESTS
+```
+
+3. Registre el resultado real de ambos casos. La prueba exige MySQL 8.4 y fija REPEATABLE READ solamente en sus conexiones de prueba. Sin la habilitación explícita se omite; no toma los valores `DB_*` de desarrollo. Si faltan permisos de observación, debe corregirse la configuración de pruebas antes de repetir; un tiempo agotado no cuenta como una liberación rechazada correctamente.
+
+Para comprobar que detecta el defecto original, en una copia de trabajo separada puede ejecutar los mismos casos con las dos comprobaciones anteriores `exists()`: deberían fallar porque se permite liberar. Esa comprobación comparativa también queda pendiente de la base exclusiva; no se afirma que se haya ejecutado.
+
+## Corrección B: error junto a la cantidad de una línea
+
+- Cambio en `frontend/js/views.js`: se agregó `<div class="field-error" data-error="cantidad"></div>` inmediatamente después del input de cada formulario de modificación de cantidad, siguiendo el estilo de los otros campos.
+- Revisión de `frontend/js/app.js`: `formErrors()` busca el mensaje dentro del formulario enviado y lo coloca mediante `textContent`. El manejo de errores del envío no llama a `render()`, no reinicia el formulario ni sustituye el valor del input. No fue necesario modificar este archivo para conservar lo escrito ante un 422.
+- Verificación ejecutada por el asistente: `node --check frontend/js/views.js` sin errores; generación del HTML con Node y datos ficticios de dos líneas, comprobando un elemento de error de cantidad en cada formulario, sus valores iniciales y ausencia de formularios de edición en una oportunidad cerrada. No se llamó a la API ni a MySQL. `git diff --check` sin errores de espacios.
+
+### Prueba manual B realizada por el usuario en navegador
+
+El usuario informó que, en «Consulta de mantenimiento», cambió la cantidad del aceite de 1 a 0, desactivando temporalmente la validación HTML. Al guardar apareció «Escriba una cantidad entera de 1 a 999» junto al campo, permaneció el 0 escrito y el total mostrado siguió en Q60.00.
+
+Este resultado corresponde al recorrido manual realizado por el usuario, no por el asistente. No se informa como comprobada la repetición sobre otra línea ni la revisión específica de la rehabilitación del botón.
+
+## Corrección C: conservar formularios al fallar acciones de botones
+
+Cambio limitado a `frontend/js/app.js`: el error de una acción conserva temporalmente en `state.formDraft` los valores de campos con id y las secciones `details` desplegadas. Se excluyen campos de contraseña y archivos. `render()` muestra el aviso desde el estado, restaura los campos y descarta esa copia temporal. `logout()` también limpia el borrador. Si la sesión ya se cerró o cambió, el error de la acción no restaura datos ni reemplaza el aviso de cierre. No se guardan formularios en localStorage.
+
+### Comprobaciones realizadas por el asistente
+
+- `node --check frontend/js/app.js`: sin errores de sintaxis.
+- Ejecución de los módulos reales del frontend en Node, con un DOM mínimo simulado y `fetch` sustituido por respuestas ficticias. No se usó navegador ni se llamó a la API real o a MySQL.
+  - Se completaron nombre, NIT, teléfono y correo de un cliente nuevo sin guardar, y se dejó desplegado su formulario. Al intentar tomar un disponible y recibir un 409 simulado, el HTML contenía el aviso, los cuatro valores permanecían y el formulario seguía desplegado. El botón se volvió a habilitar.
+  - Se cambió el nombre del borrador y se repitió la acción con un 500 simulado: permaneció el valor más reciente y se mostró el nuevo aviso en el HTML.
+  - Se repitió la acción con un 401 simulado: se eliminó la sesión de localStorage, desapareció el formulario de cliente, el login quedó con correo y contraseña vacíos y se conservó el aviso de cierre de sesión sin restaurar el borrador.
+  - Tras el error 409, se comprobó que localStorage mantenía únicamente la sesión y no contenía el nombre escrito en el borrador.
+- `git diff --check`: sin errores de espacios.
+
+Estos resultados del asistente comprueban el flujo con objetos DOM simulados, no la presentación visual. La comprobación manual posterior del usuario se registra a continuación.
+
+### Prueba manual C realizada por el usuario en navegador
+
+El usuario informó que escribió «prueba de conservacion» en el formulario de cliente, detuvo la API e intentó tomar un cliente disponible. Apareció el aviso de conexión y el formulario permaneció abierto con el nombre escrito. Después reinició la API.
+
+Esta es una prueba manual realizada por el usuario del error de conexión. Los casos de respuesta 409 y 401 siguen pendientes de comprobar en navegador; sus simulaciones en Node no sustituyen esos recorridos. Estos resultados y el caso B no constituyen una verificación completa del sistema.
+
+## Revisión previa a guardar los cambios en Git
+
+Comprobaciones realizadas por el asistente, sin ejecutar migraciones ni pruebas que escriban en MySQL:
+
+- Compatibilidad PHP: `composer.json` fija `config.platform.php` en `8.4.0` y el lock registra esa plataforma. El cambio selecciona componentes Symfony compatibles con PHP 8.4.0 en lugar de versiones que exigían 8.4.1; también incluye la actualización ya existente de phpdotenv de 5.7.0 a 5.8.0.
+- `composer --no-plugins --no-scripts validate --strict --no-check-publish`: aprobado, incluido el estado del archivo lock.
+- `composer --no-plugins --no-scripts check-platform-reqs --lock`: todos los requisitos de plataforma aprobados con PHP 8.4.0. No se instalaron ni actualizaron dependencias durante esta revisión.
+- `php vendor/bin/phpunit --do-not-cache-result tests/Feature/PanelTest.php tests/Feature/FieldComponentTest.php tests/Unit/IdentidadTest.php`: 7 pruebas aprobadas, 14 aserciones. Esta selección no ejecuta `LiberacionConcurrenteTest`; su resultado MySQL sigue atribuido al usuario en el apartado A.
+- Sintaxis: `php -l` en `Cartera.php` y `LiberacionConcurrenteTest.php`, y `node --check` en `frontend/js/app.js` y `frontend/js/views.js`, sin errores.
+- Archivos locales: `git check-ignore` confirmó que los `.env` de Laravel/API y `laravel/.env.liberacion.ps1` están ignorados. La lista de archivos `.env*` versionados contiene únicamente los ejemplos de Laravel y API.
