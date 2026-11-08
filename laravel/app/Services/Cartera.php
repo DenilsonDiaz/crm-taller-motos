@@ -2,6 +2,7 @@
 namespace App\Services;
 use App\Models\{User, Cliente, Oportunidad, Actividad};
 use App\Support\Identidad;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 class Cartera
 {
@@ -111,7 +112,18 @@ class Cartera
             }
             $client->fill($data);
             $client->vendedor_id = $target;
-            $client->save();
+            try {
+                $client->save();
+            } catch (UniqueConstraintViolationException $e) {
+                $detail = $e->errorInfo[2] ?? "";
+                if (preg_match("/for key '[^']*clientes_nit_unique'/", $detail)) {
+                    Identidad::error("nit", "Ya existe un cliente con ese NIT.");
+                }
+                if (preg_match("/for key '[^']*clientes_telefono_unique'/", $detail)) {
+                    Identidad::error("telefono", "Ya existe un cliente con ese teléfono.");
+                }
+                throw $e;
+            }
             return $client;
         }, 3);
     }
