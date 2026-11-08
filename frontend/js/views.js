@@ -11,13 +11,18 @@ const select = (label, name, options) =>
   `<div><label class="form-label" for="${name}">${label}</label><select class="form-select" id="${name}" name="${name}" required><option value="">Seleccione una opción</option>${options}</select><div class="field-error" data-error="${name}"></div></div>`;
 const options = (rows, label = "nombre") =>
   rows.map((x) => `<option value="${x.id}">${e(x[label])}</option>`).join("");
-export const heading = (tag, title, desc, action = "") =>
-  `<div class="page-heading"><div><div class="eyebrow">${tag}</div><h1>${title}</h1><p>${desc}</p></div>${action}</div>`;
+const sectionPhoto = (name) =>
+  `<picture class="section-photo" aria-hidden="true">
+    <source media="(max-width: 760px)" srcset="images/${name}-440.avif" type="image/avif">
+    <img src="images/${name}-880.avif" width="880" height="352" alt="" decoding="async">
+  </picture>`;
+export const heading = (tag, title, desc, action = "", photo = "") =>
+  `<div class="page-heading${photo ? " page-heading--photo" : ""}"><div><div class="eyebrow">${tag}</div><h1>${title}</h1><p>${desc}</p></div>${action}${photo ? sectionPhoto(photo) : ""}</div>`;
 const empty = (msg) => `<div class="empty">${msg}</div>`;
 const openStages = ["prospecto", "calificado", "propuesta", "negociacion"];
 const formError = '<div class="form-error mt-3" role="alert"></div>';
 export function login(message = "") {
-  return `<div class="login-page"><section class="login-art"><div class="brand"><span class="brand-mark">MG</span><div><span class="brand-name">MotoGest</span><small>Taller de motos · Xela</small></div></div><div><div class="eyebrow" style="color:#f8875e">Cada cliente cuenta</div><h1>Su próxima venta<br>empieza con un<br><span>buen seguimiento.</span></h1><p>Clientes, cotizaciones y oportunidades en un solo lugar. Todo listo para poner su taller en marcha.</p><div class="road-art" aria-hidden="true"></div></div><small>MOTOGEST XELA · GESTIÓN COMERCIAL</small></section><main class="login-form"><div class="login-form-inner"><div class="eyebrow">Acceso del vendedor</div><h2>Bienvenido de nuevo</h2><p>Ingrese con la cuenta que le asignó el administrador.</p>${message ? `<div class="alert alert-warning">${e(message)}</div>` : ""}<form data-form="login">${field("Correo electrónico", "correo", "email")}${field("Contraseña", "clave", "password")}<button class="button-primary" type="submit">Entrar a mi espacio →</button>${formError}</form><p class="login-foot">¿Necesita una cuenta? Solicítela al administrador del taller.</p><a class="action-link" href="http://localhost:8000/login">Acceso de administración y supervisión ↗</a></div></main></div>`;
+  return `<div class="login-page"><section class="login-art"><picture class="login-photo" aria-hidden="true"><source media="(max-width: 760px)" srcset="images/taller-440.avif" type="image/avif"><img src="images/taller-960.avif" width="960" height="1200" alt="" decoding="async" fetchpriority="high"></picture><div class="brand"><span class="brand-mark">MG</span><div><span class="brand-name">MotoGest</span><small>Taller de motos · Xela</small></div></div><div><div class="eyebrow" style="color:#f8875e">CRM para talleres de motos</div><h1>Ventas y <span>seguimiento.</span></h1><p>Consulte su cartera, prepare cotizaciones y revise las actividades pendientes.</p></div><small>MOTOGEST XELA · GESTIÓN COMERCIAL</small></section><main class="login-form"><div class="login-form-inner"><div class="eyebrow">Acceso del vendedor</div><h2>Ingresar a ventas</h2><p>Ingrese con la cuenta que le asignó el administrador.</p>${message ? `<div class="alert alert-warning">${e(message)}</div>` : ""}<form data-form="login">${field("Correo electrónico", "correo", "email")}${field("Contraseña", "clave", "password")}<button class="button-primary" type="submit">Entrar a ventas →</button>${formError}</form><p class="login-foot">¿Necesita una cuenta? Solicítela al administrador del taller.</p><a class="action-link" href="http://localhost:8000/login">Acceso de administración y supervisión ↗</a></div></main></div>`;
 }
 export function shell(state, body) {
   const user = state.session.usuario;
@@ -44,9 +49,9 @@ export function summary(s) {
     );
   return (
     heading(
-      "El taller de un vistazo",
-      "Cada oportunidad, bajo control.",
-      "Su actividad comercial y el resultado de su seguimiento.",
+      "Operación comercial",
+      "Resumen de ventas",
+      "Ventas, pronóstico y cartera del período seleccionado.",
       `<form data-form="month" class="filter-row"><label for="mes" class="visually-hidden">Mes del reporte</label><input class="form-control" id="mes" name="mes" type="month" value="${e(s.month)}" required><button class="btn btn-light">Consultar</button></form>`,
     ) +
     `<div class="metric-grid">${[
@@ -69,7 +74,7 @@ export function summary(s) {
       )
       .join(
         "",
-      )}</div><section class="hero-strip"><div><div class="eyebrow" style="color:#f8875e">El siguiente paso</div><h2>Una conversación puede abrir una venta.</h2><p>Revise sus pendientes y mantenga cerca a sus clientes.</p></div><a class="button-primary" href="#actividades">Ver seguimiento →</a></section><div class="two-col"><section class="card-box"><div class="card-head"><h2>Oportunidades recientes</h2><a class="action-link" href="#oportunidades">Ver todas →</a></div>${opTable(s.opportunities.slice(0, 5))}</section><section class="card-box"><div class="card-head"><h2>Su cartera</h2><span class="pill">${d.cartera.clientes} clientes</span></div><p class="meta">Cada vendedor puede atender hasta diez clientes. Consulte sus datos o tome un cliente disponible.</p><div class="progress-track"><span style="width:${d.cartera.clientes * 10}%"></span></div><a class="button-primary mt-4" href="#clientes">Administrar mi cartera →</a></section></div>`
+      )}</div><section class="hero-strip"><picture class="hero-photo" aria-hidden="true"><source media="(max-width: 760px)" srcset="images/motor-440.avif" type="image/avif"><img src="images/motor-800.avif" width="800" height="450" alt="" decoding="async" loading="lazy"></picture><div><div class="eyebrow" style="color:#f8875e">Agenda comercial</div><h2>Actividades de seguimiento</h2><p>Consulte llamadas, reuniones y tareas pendientes.</p></div><a class="button-primary" href="#actividades">Abrir agenda →</a></section><div class="two-col"><section class="card-box"><div class="card-head"><h2>Oportunidades recientes</h2><a class="action-link" href="#oportunidades">Ver todas →</a></div>${opTable(s.opportunities.slice(0, 5))}</section><section class="card-box"><div class="card-head"><h2>Su cartera</h2><span class="pill">${d.cartera.clientes} clientes</span></div><p class="meta">Cada vendedor puede atender hasta diez clientes. Consulte sus datos o tome un cliente disponible.</p><div class="progress-track"><span style="width:${d.cartera.clientes * 10}%"></span></div><a class="button-primary mt-4" href="#clientes">Administrar mi cartera →</a></section></div>`
   );
 }
 function opTable(ops) {
@@ -94,6 +99,8 @@ export function opportunities(s) {
       "De la consulta a la venta",
       "Su embudo comercial",
       "Dé seguimiento a cada cotización y avance una etapa a la vez.",
+      "",
+      "repuestos",
     ) +
     `<section class="card-box"><details><summary>Crear una cotización</summary>${!s.allClients.length ? empty("Registre o tome un cliente para poder crear una cotización.") : `<form data-form="opportunity"><div class="row g-3"><div class="col-md-6">${select("Cliente", "cliente_id", options(s.allClients))}</div><div class="col-md-6">${field("Título de la cotización", "titulo")}</div></div><button class="button-primary mt-3">Crear en prospecto</button>${formError}</form>`}</details></section><div class="stage-picker">
       <label class="form-label" for="board-stage">Etapa del embudo</label>
@@ -135,6 +142,8 @@ export function activities(s) {
       "Mantenga la conversación",
       "Actividades de seguimiento",
       "Organice sus llamadas, reuniones y tareas con sus clientes.",
+      "",
+      "servicio",
     ) +
     `<section class="card-box"><details><summary>Registrar una actividad</summary>${!s.allClients.length ? empty("Necesita un cliente asignado para registrar actividades.") : `<form data-form="activity"><div class="row g-3"><div class="col-md-6">${select("Cliente", "cliente_id", options(s.allClients))}</div><div class="col-md-6">${select("Tipo", "tipo", '<option value="llamada">Llamada</option><option value="reunion">Reunión</option><option value="tarea">Tarea</option>')}</div><div class="col-md-8">${field("Descripción", "descripcion")}</div><div class="col-md-4">${field("Vencimiento en hora de Guatemala", "vence_en", "datetime-local", "", false)}</div></div><button class="button-primary mt-3">Guardar actividad</button>${formError}</form>`}</details></section><section class="card-box"><div class="card-head"><h2>Su agenda</h2><label>Mostrar <select class="form-select" id="activity-filter"><option value="">Todas</option><option value="pendiente" ${s.activityFilter === "pendiente" ? "selected" : ""}>Pendientes</option><option value="completada" ${s.activityFilter === "completada" ? "selected" : ""}>Completadas</option></select></label></div>${s.activities.length ? `<table class="table table-mobile"><thead><tr><th>Actividad</th><th>Cliente</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead><tbody>${s.activities.map((a) => `<tr class="${a.vencida && !a.completada ? "activity-overdue" : ""}"><td data-label="Actividad"><strong>${e(a.descripcion)}</strong><small>${e(a.tipo)}</small></td><td data-label="Cliente">${e(a.cliente.nombre)}</td><td data-label="Vencimiento">${date(a.vence_en)}</td><td data-label="Estado"><span class="pill ${a.completada ? "active" : a.vencida ? "overdue" : ""}">${a.completada ? "Completada" : a.vencida ? "Vencida" : "Pendiente"}</span></td><td><button class="btn btn-sm btn-light" data-action="complete" data-id="${a.id}" data-value="${!a.completada}">${a.completada ? "Volver a pendiente" : "Completar ✓"}</button></td></tr>`).join("")}</tbody></table>` : empty("No hay actividades para este filtro.")}</section>`
   );
