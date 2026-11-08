@@ -1326,7 +1326,7 @@
             "exec": [
               "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
               "pm.test(\"Respuesta JSON\", () => pm.response.to.be.json);",
-              "const d=pm.response.json();const l=d.productos.find(p=>p.nombre.includes(\"Instalación\"));if(l)pm.collectionVariables.set(\"sectorLineaId\",l.id);"
+              "const d=pm.response.json();const l=d.productos.find(p=>p.nombre===\"Mano de obra de instalación de cilindro\");pm.test(\"Encuentra la línea de instalación\",()=>pm.expect(l).to.exist);if(l)pm.collectionVariables.set(\"sectorLineaId\",l.id);"
             ]
           }
         }
