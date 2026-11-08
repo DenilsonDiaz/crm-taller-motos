@@ -55,7 +55,7 @@ class Cartera
                     "La asignación cambió. Recargue e intente nuevamente.",
                 );
             }
-            if ($target) {
+            if ($target !== null && $client->vendedor_id !== $target) {
                 $seller = $locked->get($target);
                 if (
                     !$seller ||
@@ -70,7 +70,6 @@ class Cartera
                     );
                 }
                 if (
-                    $client->vendedor_id !== $target &&
                     Cliente::where("vendedor_id", $target)
                         ->lockForUpdate()
                         ->get(["id"])
