@@ -199,3 +199,24 @@ Comprobaciones realizadas por el asistente, sin ejecutar migraciones ni pruebas 
 - `php vendor/bin/phpunit --do-not-cache-result tests/Feature/PanelTest.php tests/Feature/FieldComponentTest.php tests/Unit/IdentidadTest.php`: 7 pruebas aprobadas, 14 aserciones. Esta selección no ejecuta `LiberacionConcurrenteTest`; su resultado MySQL sigue atribuido al usuario en el apartado A.
 - Sintaxis: `php -l` en `Cartera.php` y `LiberacionConcurrenteTest.php`, y `node --check` en `frontend/js/app.js` y `frontend/js/views.js`, sin errores.
 - Archivos locales: `git check-ignore` confirmó que los `.env` de Laravel/API y `laravel/.env.liberacion.ps1` están ignorados. La lista de archivos `.env*` versionados contiene únicamente los ejemplos de Laravel y API.
+
+
+## Verificación del 7 de noviembre de 2026
+
+Ejecutamos las pruebas en Windows con PHP 8.4.0, Node 24.19.0 y MySQL 8.4.13. Usamos bases de pruebas separadas de la base de demostración. Los apartados anteriores conservan los resultados históricos.
+
+| Comprobación | Resultado |
+|---|---|
+| API sin MySQL | 14 pruebas aprobadas. Las 2 que requieren MySQL se ejecutaron por separado y pasaron. |
+| Laravel con la prueba de liberación concurrente habilitada | 9 pruebas y 40 aserciones aprobadas. |
+| Propiedad en la API | 12 peticiones a recursos ajenos devolvieron 404, con datos válidos e inválidos. Un teléfono inválido en un cliente propio devolvió 422. |
+| Permisos en el panel | Sergio recibió 404 al abrir e intentar guardar la edición de un cliente del equipo de Sandra. |
+| Errores API | Una codificación JSON incompatible devolvió 400. Un alta con cuatro campos inválidos devolvió los cuatro mensajes en un 422. |
+| Formularios Laravel | Se mostró el mensaje por campo al enviar un NIT o teléfono duplicado y se conservó el texto ingresado. Editar el correo de un cliente de Iván conservó su asignación. |
+| Concurrencia | Diez vendedores intentaron tomar un mismo cliente. Hubo un 200 y nueve 409. Dos destinos de etapa partieron de la misma etapa y solo uno dejó una fila nueva de historial. La integración de cupo y duplicados simultáneos también pasó. |
+| Cifras de control | Coincidieron las cuatro filas de vendedores en la API y los totales de ambos equipos, empresa y cuatro productos en el panel, con solo la semilla de verificación. |
+| Integración panel–API–reporte | Sergio asignó un cliente, Valeria pudo leerlo y ganar una venta por la API, y el reporte del equipo reflejó el importe. Este recorrido se ejecutó por HTTP. |
+| Regla del taller | Pasó la prueba MySQL que rechaza el cierre sin instalación y lo acepta al agregar el servicio. |
+| Colección Postman | Newman ejecutó las 36 peticiones y aprobó 74 aserciones. El primer recorrido reveló un selector que no encontraba el nombre de la línea de instalación. Se corrigió y se repitió con datos iniciales en otra base. |
+
+Queda repetir el recorrido completo con la SPA en navegador, ensayar la defensa, completar la evidencia de la pareja e incorporar el cambio del catedrático si ya se publicó. La etiqueta de entrega corresponde al commit que se acuerde presentar.

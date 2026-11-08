@@ -2,7 +2,7 @@
 Proyecto académico de Programación Web. Administra seguimiento comercial, clientes y cotizaciones de repuestos y servicios de un taller ficticio de Quetzaltenango. Interfaz en español, quetzales y fechas de Guatemala.
 
 ## Estado de esta versión
-Código preparado con asistencia de IA, con historial real y etiqueta `spec-v1` anterior a la implementación. Las pruebas automáticas sin MySQL y la revisión visual de la SPA pasaron; la integración con MySQL 8.4, las cifras cargadas, concurrencia real y el recorrido de ambas puertas siguen pendientes de ejecución en Windows. Consulte [docs/verificacion.md](docs/verificacion.md). No se creó una etiqueta `entrega-final` ni se inventó el cambio del catedrático `spec-v2`.
+La etiqueta `spec-v1` precede a la implementación. En Windows se comprobaron las cifras de control, las peticiones simultáneas, la regla del taller y el recorrido panel–API–reporte con MySQL 8.4. Los resultados y pendientes están en [docs/verificacion.md](docs/verificacion.md#verificacion-del-7-de-noviembre-de-2026).
 
 ## Estructura y tecnologías
 | Carpeta | Función | Tecnología |
@@ -18,10 +18,11 @@ Una sola base MySQL compartida. Laravel es el único que ejecuta DDL y genera ha
 ## 1. Abrir el proyecto
 Use PowerShell **normal** en Visual Studio Code. No hace falta ser administrador para programar.
 
-Extraiga el ZIP dentro de `C:\Proyectos` para obtener `C:\Proyectos\crm-taller-motos\README.md`. Si ya existe una carpeta de ese nombre con trabajo suyo, extraiga en otra ubicación; conserve su trabajo anterior. Abra la carpeta que contiene este README, `api`, `frontend` y `laravel`.
+Abra la carpeta donde quiere guardar el proyecto y clone el repositorio. Si ya tiene una copia local, abra esa carpeta.
 
 ```powershell
-cd C:\Proyectos\crm-taller-motos
+git clone https://github.com/DenilsonDiaz/crm-taller-motos.git
+cd crm-taller-motos
 code .
 php -v
 composer --version
@@ -30,7 +31,7 @@ npm.cmd -v
 git --version
 ```
 
-Requisitos del enunciado: PHP 8.4, Composer 2, Node 24, MySQL 8.4 y Git. Las dependencias exactas están fijadas en `composer.lock` y los dos `package-lock.json`. El ZIP incluye código e historial; excluye dependencias descargables y credenciales.
+Requisitos del enunciado: PHP 8.4, Composer 2, Node 24, MySQL 8.4 y Git. Las dependencias exactas están fijadas en `composer.lock` y los dos `package-lock.json`.
 
 ## 2. Instalar dependencias
 Desde la raíz:
@@ -250,7 +251,7 @@ git status
 # Configure su propio nombre y correo con git config antes de su primer commit.
 ```
 
-No se incluyeron contraseñas privadas ni `.env`. No ignore los archivos lock. Cuando tengan un repositorio nuevo y vacío de GitHub, agreguen la URL que GitHub les dé como remoto y suban `main` y las etiquetas; no usen force push para resolver un rechazo sin revisar antes el remoto.
+No se incluyeron contraseñas privadas ni `.env`. No ignore los archivos lock. Antes de publicar la entrega, comprueben que `origin` apunta al repositorio que compartirá la pareja con el catedrático.
 
 El cambio del catedrático se documentará primero en la especificación, se etiquetará `spec-v2` y se implementará con una migración nueva si cambia la base. `entrega-final` se crea después de cerrar la matriz de pruebas y ensayar la defensa.
 
