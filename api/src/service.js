@@ -253,12 +253,15 @@ export function createService(pool) {
       );
     },
     async stage(actor, id, data) {
+      const initial = await ownOpportunity(pool, actor, id);
       return transaction(
         pool,
         async (db) => {
           const op = await ownOpportunity(db, actor, id, true);
           open(op);
           await ownClient(db, actor, op.cliente_id);
+          if (op.etapa !== initial.etapa)
+            fail(409, "La etapa cambió. Recargue e intente nuevamente.");
           if (!stages.includes(data.etapa))
             invalid({ etapa: "Seleccione una etapa válida." });
           const reason =
