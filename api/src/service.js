@@ -159,12 +159,11 @@ export function createService(pool) {
       );
     },
     async updateClient(actor, id, data) {
-      const d = clientData(data, true);
       return transaction(
         pool,
         async (db) => {
           const row = await ownClient(db, actor, id, true);
-          const next = { ...row, ...d };
+          const next = { ...row, ...clientData(data, true) };
           await db.execute(
             "UPDATE clientes SET nombre=?,nit=?,telefono=?,correo=?,updated_at=UTC_TIMESTAMP() WHERE id=?",
             [next.nombre, next.nit, next.telefono, next.correo, id],
@@ -217,21 +216,12 @@ export function createService(pool) {
     },
     detail: (actor, id) => detail(pool, actor, id),
     async createOpportunity(actor, data) {
-      const client = foreignId(data.cliente_id, "cliente_id"),
-        title = text(data.titulo, "titulo", 150);
+      const client = foreignId(data.cliente_id, "cliente_id");
       return transaction(
         pool,
         async (db) => {
-          if (
-            !(
-              await rows(
-                db,
-                "SELECT id FROM clientes WHERE id=? AND vendedor_id=? FOR UPDATE",
-                [client, actor],
-              )
-            )[0]
-          )
-            invalid({ cliente_id: "Seleccione un cliente de su cartera." });
+          await ownClient(db, actor, client, true);
+          const title = text(data.titulo, "titulo", 150);
           const [res] = await db.execute(
             "INSERT INTO oportunidades (cliente_id,vendedor_id,titulo,etapa,created_at,updated_at) VALUES (?,?,?,'prospecto',UTC_TIMESTAMP(),UTC_TIMESTAMP())",
             [client, actor, title],
@@ -246,13 +236,13 @@ export function createService(pool) {
       );
     },
     async updateOpportunity(actor, id, data) {
-      const title = text(data.titulo, "titulo", 150);
       return transaction(
         pool,
         async (db) => {
           const op = await ownOpportunity(db, actor, id, true);
           open(op);
           await ownClient(db, actor, op.cliente_id);
+          const title = text(data.titulo, "titulo", 150);
           await db.execute(
             "UPDATE oportunidades SET titulo=?,updated_at=UTC_TIMESTAMP() WHERE id=?",
             [title, id],
@@ -263,18 +253,18 @@ export function createService(pool) {
       );
     },
     async stage(actor, id, data) {
-      if (!stages.includes(data.etapa))
-        invalid({ etapa: "Seleccione una etapa válida." });
-      const reason =
-        data.etapa === "perdida"
-          ? text(data.motivo_perdida, "motivo_perdida", 255)
-          : null;
       return transaction(
         pool,
         async (db) => {
           const op = await ownOpportunity(db, actor, id, true);
           open(op);
           await ownClient(db, actor, op.cliente_id);
+          if (!stages.includes(data.etapa))
+            invalid({ etapa: "Seleccione una etapa válida." });
+          const reason =
+            data.etapa === "perdida"
+              ? text(data.motivo_perdida, "motivo_perdida", 255)
+              : null;
           if (!canTransition(op.etapa, data.etapa))
             fail(409, "La transición de etapa no está permitida.");
           if (data.etapa === "ganada") {
@@ -360,14 +350,14 @@ export function createService(pool) {
       return list.map(activityJSON);
     },
     async createActivity(actor, client, data) {
-      if (!["llamada", "reunion", "tarea"].includes(data.tipo))
-        invalid({ tipo: "Seleccione llamada, reunión o tarea." });
-      const desc = text(data.descripcion, "descripcion", 500),
-        due = iso(data.vence_en);
       return transaction(
         pool,
         async (db) => {
           await ownClient(db, actor, client, true);
+          if (!["llamada", "reunion", "tarea"].includes(data.tipo))
+            invalid({ tipo: "Seleccione llamada, reunión o tarea." });
+          const desc = text(data.descripcion, "descripcion", 500),
+            due = iso(data.vence_en);
           const [res] = await db.execute(
             "INSERT INTO actividades (cliente_id,vendedor_id,tipo,descripcion,vence_en,completada,created_at,updated_at) VALUES (?,?,?,?,?,0,UTC_TIMESTAMP(),UTC_TIMESTAMP())",
             [client, actor, data.tipo, desc, sqlDate(due)],
@@ -383,8 +373,6 @@ export function createService(pool) {
       );
     },
     async updateActivity(actor, id, data) {
-      if (typeof data.completada !== "boolean")
-        invalid({ completada: "Indique verdadero o falso." });
       return transaction(
         pool,
         async (db) => {
@@ -394,6 +382,8 @@ export function createService(pool) {
             [id, actor],
           );
           if (!a) fail(404, "No se encontró la actividad.");
+          if (typeof data.completada !== "boolean")
+            invalid({ completada: "Indique verdadero o falso." });
           await db.execute(
             "UPDATE actividades SET completada=?,updated_at=UTC_TIMESTAMP() WHERE id=?",
             [data.completada ? 1 : 0, id],
