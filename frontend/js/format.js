@@ -6,10 +6,11 @@ export const escapeHTML = (value) =>
         c
       ],
   );
-export const cash = (value) =>
-  new Intl.NumberFormat("es-GT", { style: "currency", currency: "GTQ" }).format(
-    Number(value),
-  );
+const quetzales = new Intl.NumberFormat("es-GT", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+export const cash = (value) => "Q" + quetzales.format(Number(value));
 export const date = (value) =>
   value
     ? new Intl.DateTimeFormat("es-GT", {

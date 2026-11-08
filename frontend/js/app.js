@@ -15,6 +15,7 @@ const state = {
   month: monthNow(),
   search: "",
   activityFilter: "",
+  boardStage: "prospecto",
   clients: [],
   allClients: [],
   available: [],
@@ -158,6 +159,11 @@ async function load() {
     }
   }
 }
+function buttonLoading(button, loading) {
+  if (!button) return;
+  button.classList.toggle("is-loading", loading);
+  button.setAttribute("aria-busy", String(loading));
+}
 function formErrors(form, error) {
   form.querySelectorAll("[data-error]").forEach((e) => (e.textContent = ""));
   for (const [key, message] of Object.entries(error.fields || {})) {
@@ -193,8 +199,10 @@ root.addEventListener("submit", async (event) => {
     return;
   }
   busy = true;
-  const buttons = [...form.querySelectorAll("button")];
+  const buttons = [...form.querySelectorAll("button:not(:disabled)")];
+  const submitter = event.submitter ?? buttons[0];
   buttons.forEach((b) => (b.disabled = true));
+  buttonLoading(submitter, true);
   try {
     let message = "Cambios guardados correctamente.";
     if (type === "login") {
@@ -263,6 +271,7 @@ root.addEventListener("submit", async (event) => {
   } finally {
     busy = false;
     buttons.forEach((b) => (b.disabled = false));
+    buttonLoading(submitter, false);
   }
 });
 root.addEventListener("click", async (event) => {
@@ -293,6 +302,7 @@ root.addEventListener("click", async (event) => {
   if (busy) return;
   busy = true;
   button.disabled = true;
+  buttonLoading(button, true);
   const actionSession = state.session;
   try {
     if (action === "take")
@@ -337,9 +347,16 @@ root.addEventListener("click", async (event) => {
   } finally {
     busy = false;
     button.disabled = false;
+    buttonLoading(button, false);
   }
 });
 root.addEventListener("change", async (event) => {
+  if (event.target.id === "board-stage") {
+    state.boardStage = event.target.value;
+    root.querySelectorAll(".board-column").forEach((column) => {
+      column.classList.toggle("is-current", column.dataset.stage === state.boardStage);
+    });
+  }
   if (event.target.id === "activity-filter") {
     state.activityFilter = event.target.value;
     await load();

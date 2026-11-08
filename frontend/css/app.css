@@ -1,19 +1,21 @@
 :root {
-  --ink: #1e242c;
-  --muted: #717781;
-  --paper: #f5f6f8;
-  --line: #e5e7eb;
-  --accent: #ed6335;
-  --accent-dark: #c84920;
-  --sidebar: #1c2229;
-  --radius: 14px;
+  --ink: #334155;
+  --muted: #64748b;
+  --paper: #f8fafc;
+  --line: #e2e8f0;
+  --accent: #ea580c;
+  --accent-dark: #9a3412;
+  --sidebar: #0f172a;
+  --surface: #ffffff;
+  --danger: #dc2626;
+  --radius: 6px;
 }
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
-  font-family: Inter, Arial, sans-serif;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--paper);
   color: var(--ink);
   font-size: 14px;
@@ -35,15 +37,15 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible,
-main:focus {
-  outline: 3px solid #ff9b72;
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 .app-shell {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
   min-height: 100vh;
+  overflow-y: auto;
 }
 .sidebar {
   background: var(--sidebar);
@@ -65,12 +67,12 @@ main:focus {
 .brand-mark {
   background: var(--accent);
   color: white;
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 11px 9px;
   font-size: 19px;
   font-weight: 800;
-  letter-spacing: -1px;
-  transform: skew(-5deg);
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 .brand-name {
   font-size: 20px;
@@ -104,11 +106,12 @@ main:focus {
   gap: 11px;
 }
 .side-nav a:hover {
-  background: #2a323c;
+  background: #1e293b;
   color: white;
 }
 .side-nav a.active {
-  background: var(--accent);
+  background: #1e293b;
+  box-shadow: inset 3px 0 var(--accent);
   color: white;
 }
 .side-nav .nav-icon {
@@ -140,7 +143,7 @@ main:focus {
 .topbar {
   height: 79px;
   padding: 0 36px;
-  background: white;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -193,9 +196,26 @@ main:focus {
 }
 .page-heading h1 {
   font-size: 29px;
-  letter-spacing: -1px;
-  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-weight: 700;
   margin: 0 0 8px;
+}
+.page-heading h1,
+.content h2,
+.login-form h2 {
+  color: var(--sidebar);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.content .hero-strip h2 {
+  color: var(--surface);
+}
+.hero-strip .button-primary {
+  background: var(--surface);
+  color: var(--sidebar);
+}
+.hero-strip .button-primary:hover {
+  background: #f1f5f9;
 }
 .page-heading p {
   margin: 0;
@@ -204,7 +224,7 @@ main:focus {
 }
 .button-primary,
 .btn-primary {
-  background: var(--accent);
+  background: var(--sidebar);
   color: white;
   border: 0;
   border-radius: 8px;
@@ -214,11 +234,11 @@ main:focus {
 }
 .button-primary:hover,
 .btn-primary:hover {
-  background: var(--accent-dark);
+  background: #1e293b;
   color: white;
 }
 .btn-light {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
 }
@@ -232,7 +252,7 @@ main:focus {
   margin-bottom: 24px;
 }
 .metric {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 22px;
@@ -249,7 +269,7 @@ main:focus {
   font-size: 28px;
   margin: 13px 0 9px;
   font-weight: 750;
-  letter-spacing: -1px;
+  letter-spacing: -0.02em;
 }
 .metric p {
   font-size: 12px;
@@ -257,7 +277,7 @@ main:focus {
   margin: 0;
 }
 .card-box {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 23px;
@@ -317,21 +337,37 @@ main:focus {
   gap: 22px;
 }
 .table {
-  font-size: 12px;
+  --bs-table-color: var(--ink);
+  --bs-table-bg: var(--surface);
+  font-size: 13px;
   vertical-align: middle;
   margin-bottom: 0;
 }
 .table > :not(caption) > * > * {
   padding: 15px 11px;
-  border-color: #edf0f3;
+  border-color: var(--line);
 }
 .table thead th {
-  font-size: 10px;
-  color: var(--muted);
+  font-size: 11px;
+  color: var(--surface);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  background: #fafbfc;
+  background: var(--sidebar);
+}
+.table tbody tr:hover > td {
+  background: #f1f5f9;
+}
+.table .amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.technical {
+  font-family: ui-monospace, Consolas, monospace;
+}
+.table .activity-overdue > td:first-child {
+  border-left: 4px solid #ef4444;
 }
 .table td small {
   color: var(--muted);
@@ -380,7 +416,7 @@ main:focus {
 .form-select {
   font-size: 13px;
   padding: 11px;
-  border-color: #dfe4ea;
+  border-color: var(--line);
   border-radius: 8px;
 }
 .form-text {
@@ -388,8 +424,8 @@ main:focus {
   color: var(--muted);
 }
 .field-error {
-  font-size: 12px;
-  color: #b23d32;
+  font-size: 0.875rem;
+  color: var(--danger);
   min-height: 0;
   margin-top: 4px;
 }
@@ -410,10 +446,14 @@ main:focus {
   gap: 14px;
   margin-bottom: 25px;
 }
+.stage-picker {
+  display: none;
+}
 .board-column {
-  background: #ebedf1;
+  background: #f1f5f9;
+  border: 1px solid var(--line);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius);
   min-width: 0;
 }
 .board-column h2 {
@@ -424,12 +464,12 @@ main:focus {
 }
 .op-card {
   display: block;
-  background: white;
-  border: 1px solid #e1e4e9;
-  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   padding: 15px;
   margin-bottom: 11px;
-  box-shadow: 0 2px 4px #1e242c04;
+  overflow-wrap: anywhere;
 }
 .op-card:hover {
   border-color: var(--accent);
@@ -480,7 +520,7 @@ main:focus {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  background: white;
+  background: var(--surface);
 }
 .login-art {
   background: var(--sidebar);
@@ -520,7 +560,7 @@ main:focus {
   font-size: 90px;
   font-weight: 900;
   font-style: italic;
-  color: #ed6335;
+  color: #ea580c;
   letter-spacing: -15px;
   position: absolute;
   bottom: 0;
@@ -571,14 +611,44 @@ main:focus {
   margin-bottom: 18px;
 }
 .loading {
-  height: 4px;
-  background: linear-gradient(90deg, #fee9df, var(--accent), #fee9df);
-  background-size: 200% 100%;
-  animation: loading 1s infinite;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgb(248 250 252 / 72%);
 }
-@keyframes loading {
+.loading::after,
+button.is-loading::after {
+  content: "";
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid #fed7aa;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+button.is-loading {
+  position: relative;
+}
+button.is-loading:disabled {
+  color: transparent;
+  opacity: 1;
+}
+button.is-loading::after {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+@keyframes spin {
   to {
-    background-position: -200% 0;
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading::after,
+  button.is-loading::after {
+    animation: none;
   }
 }
 .bottom-note {
@@ -650,9 +720,6 @@ main:focus {
 }
 @media (max-width: 1150px) {
   .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .board {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .two-col {
@@ -727,7 +794,14 @@ main:focus {
     padding: 17px;
   }
   .board {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stage-picker {
+    display: block;
+    margin-bottom: 12px;
+  }
+  .board-column:not(.is-current) {
+    display: none;
   }
   .hero-strip {
     padding: 22px;
@@ -744,6 +818,7 @@ main:focus {
     width: 100%;
   }
   .table-mobile tr {
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 10px;
     padding: 10px;
@@ -754,6 +829,12 @@ main:focus {
     border: 0;
     overflow-wrap: anywhere;
   }
+  .table-mobile .activity-overdue {
+    border-left: 4px solid #ef4444;
+  }
+  .table-mobile .activity-overdue > td:first-child {
+    border-left: 0;
+  }
   .table-mobile td:before {
     content: attr(data-label);
     display: block;
@@ -761,6 +842,16 @@ main:focus {
     text-transform: uppercase;
     color: var(--muted);
     margin-bottom: 3px;
+  }
+  .closed-list .table-mobile tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .closed-list td:first-child {
+    grid-column: 1 / -1;
+  }
+  .closed-list td:last-child {
+    grid-column: 1 / -1;
   }
   .login-page {
     grid-template-columns: 1fr;
@@ -771,7 +862,7 @@ main:focus {
   .login-art h1 {
     font-size: 32px;
     margin-top: 25px;
-    letter-spacing: -1px;
+    letter-spacing: -0.02em;
   }
   .login-art .road-art,
   .login-art > small {
