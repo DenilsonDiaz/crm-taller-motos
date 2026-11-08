@@ -66,24 +66,30 @@ export function phone(value) {
   return n;
 }
 export function clientData(data, partial = false) {
-  const result = {};
+  const result = {}, errors = {};
   for (const field of ["nombre", "nit", "telefono", "correo"]) {
     if (partial && !(field in data)) continue;
-    if (field === "nombre") result[field] = text(data[field], field, 150);
-    if (field === "nit") result[field] = nit(data[field]);
-    if (field === "telefono") result[field] = phone(data[field]);
-    if (field === "correo") {
-      const v = data[field];
-      if (v == null || v === "") result[field] = null;
-      else if (
-        typeof v !== "string" ||
-        v.trim().length > 150 ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
-      )
-        invalid({ correo: "Escriba un correo válido." });
-      else result[field] = v.trim();
+    try {
+      if (field === "nombre") result[field] = text(data[field], field, 150);
+      if (field === "nit") result[field] = nit(data[field]);
+      if (field === "telefono") result[field] = phone(data[field]);
+      if (field === "correo") {
+        const v = data[field];
+        if (v == null || v === "") result[field] = null;
+        else if (
+          typeof v !== "string" ||
+          v.trim().length > 150 ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+        )
+          invalid({ correo: "Escriba un correo válido." });
+        else result[field] = v.trim();
+      }
+    } catch (error) {
+      if (!(error instanceof HttpError) || error.status !== 422) throw error;
+      Object.assign(errors, error.fields);
     }
   }
+  if (Object.keys(errors).length) invalid(errors);
   return result;
 }
 export function quantity(value) {

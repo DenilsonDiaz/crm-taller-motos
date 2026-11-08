@@ -192,7 +192,8 @@ export function createApp(pool, env = process.env) {
     res.status(404).json({ error: "No se encontró la ruta." }),
   );
   app.use((error, req, res, next) => {
-    if (error.type === "entity.parse.failed")
+    if (error.type === "entity.parse.failed" ||
+        ["charset.unsupported", "encoding.unsupported"].includes(error.type))
       return res
         .status(400)
         .json({ error: "El JSON no se puede interpretar." });
@@ -213,7 +214,7 @@ export function createApp(pool, env = process.env) {
         .json({
           error: "Otra operación modificó estos datos. Intente nuevamente.",
         });
-    if (error.status)
+    if (error instanceof HttpError)
       return res
         .status(error.status)
         .json(
