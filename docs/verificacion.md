@@ -1,6 +1,6 @@
 # Verificación de MotoGest Xela
 
-Revisión: 4 de noviembre de 2026. Esta versión entrega código preparado, no una aprobación final del laboratorio. No se ha ejecutado la integración completa en el MySQL 8.4 de la computadora del estudiante.
+Este documento conserva la revisión inicial del 4 de noviembre de 2026 y las verificaciones posteriores. La [matriz de cierre](#matriz-de-cierre) distingue los resultados de MySQL, las pruebas con respuestas simuladas y las comprobaciones que siguen abiertas.
 
 ## Resultados ejecutados
 | Verificación | Resultado observado |
@@ -20,7 +20,7 @@ Revisión: 4 de noviembre de 2026. Esta versión entrega código preparado, no u
 
 Las pruebas de interfaz usan datos preparados para revisar presentación y estados. Sus montos no son evidencia de que las consultas a MySQL hayan producido las cifras del enunciado. Se intentó iniciar un MySQL temporal de compatibilidad en el entorno de construcción; no pudo iniciar por falta de soporte de socket Unix. No se sustituyó esa prueba por una aprobación ficticia ni por SQLite.
 
-## Matriz por criterio
+## Matriz por criterio de la revisión inicial
 “Parcial” significa código y alguna evidencia disponibles, con aceptación integrada pendiente. “Pendiente” exige ejecutarlo en la base de pruebas MySQL 8.4 antes de marcar entrega-final.
 
 | Criterio | Evidencia y comprobación | Resultado |
@@ -220,3 +220,24 @@ Ejecutamos las pruebas en Windows con PHP 8.4.0, Node 24.19.0 y MySQL 8.4.13. Us
 | Colección Postman | Newman ejecutó las 36 peticiones y aprobó 74 aserciones. El primer recorrido reveló un selector que no encontraba el nombre de la línea de instalación. Se corrigió y se repitió con datos iniciales en otra base. |
 
 Queda repetir el recorrido completo con la SPA en navegador, ensayar la defensa, completar la evidencia de la pareja e incorporar el cambio del catedrático si ya se publicó. La etiqueta de entrega corresponde al commit que se acuerde presentar.
+
+## Matriz de cierre
+
+| Criterios | Evidencia disponible | Alcance pendiente |
+|---|---|---|
+| L1 | Migraciones y ambas semillas ejecutadas en Windows. La integración con solo `VerificacionSeeder` pasó los conteos. | |
+| L2 | Pruebas Laravel de acceso y ausencia de registro. En MySQL se comprobó el alcance de Sergio y la conservación de una asignación a Iván inactivo. | Comprobar en el panel una sesión abierta que pierde acceso. |
+| L3, A4 | Newman comprobó las operaciones de cotización y el cierre con instalación. Denilson ejecutó además una prueba local de precio histórico contra MySQL que cubrió cambios de catálogo, cantidad y desactivación. | Repetir desde la interfaz el cambio de precio del catálogo y la consulta de la cotización anterior. |
+| L4, L5, L7, A3 | Se verificaron mensajes de duplicados, alcance por equipo, integración de asignación, cupo y toma simultánea. Denilson obtuvo dos casos y 26 aserciones en la regresión de liberación. | |
+| L6, A6 | El equipo informó que los resultados de vendedor, equipo, empresa y productos coincidieron con la tabla de control. | |
+| A1, A2, A7 | El login y el formato de errores pasaron en Express. Denilson informó nueve pruebas locales aprobadas de permisos HTTP con MySQL, que incluyeron `401`, `403` y `404`. La invalidación de un token anterior también tiene una prueba HTTP con usuarios en memoria. | Vencimiento, firma alterada y pérdida de sesión en el navegador con MySQL. |
+| A5, A8 | Newman pasó 36 peticiones y 74 aserciones, incluyendo actividades y la regla del taller. | |
+| F1–F6 | Se revisaron pantallas con API simulada. Denilson comprobó el ingreso real, el error junto a cantidad y la conservación del formulario al detener la API. El recorrido de asignación a reporte pasó por HTTP. | Repetir el recorrido integrado con el navegador y el diseño actualizado, incluyendo móvil, teclado, actividades y respuestas `401` y `409`. |
+| S1–S4 | Hash generado en PHP y verificado en Node. Solo se versionan los `.env.example`. Pasaron las pruebas de búsqueda con entrada de inyección y de respuesta pública del login. | |
+| S5–S8 | Se comprobó `404` para recursos ajenos, origen CORS en pruebas HTTP, escape en una prueba de interfaz simulada y concurrencia con MySQL. | Repetir escape y CORS desde un navegador conectado a la API real. |
+| P1, P2, P4, P5 | `spec-v1` precede al código. El plan enlaza aportes comprobables en Git. Están incluidos `AGENTS.md` y la bitácora de tres incidentes con sus commits. | El cambio del catedrático requiere el texto publicado en el aula para documentarlo e implementarlo. |
+| P3 y regla propia | Los resultados de MySQL y Newman están arriba. La prueba de instalación rechazó el primer cierre y lo aceptó al agregar el servicio. | |
+
+### Revisión del código en `c41c6be`
+
+El 9 de noviembre se repitieron las pruebas de Node sin MySQL desde una copia limpia de GitHub. Pasaron 14 y se omitieron las dos integraciones que requieren MySQL. También se instaló el frontend de Laravel desde su archivo lock y Vite compiló sus recursos correctamente. Los resultados de PHP y MySQL de los apartados anteriores corresponden a las ejecuciones en Windows.
