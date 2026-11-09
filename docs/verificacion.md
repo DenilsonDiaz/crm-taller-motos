@@ -219,7 +219,7 @@ Ejecutamos las pruebas en Windows con PHP 8.4.0, Node 24.19.0 y MySQL 8.4.13. Us
 | Regla del taller | Pasó la prueba MySQL que rechaza el cierre sin instalación y lo acepta al agregar el servicio. |
 | Colección Postman | Newman ejecutó las 36 peticiones y aprobó 74 aserciones. El primer recorrido reveló un selector que no encontraba el nombre de la línea de instalación. Se corrigió y se repitió con datos iniciales en otra base. |
 
-Queda repetir el recorrido completo con la SPA en navegador, ensayar la defensa, completar la evidencia de la pareja e incorporar el cambio del catedrático si ya se publicó. La etiqueta de entrega corresponde al commit que se acuerde presentar.
+Al cierre del 7 de noviembre quedaban pendientes el recorrido con la SPA en navegador, el ensayo de la defensa y el cambio del catedrático si ya se publicó. Las comprobaciones posteriores están en la matriz de cierre.
 
 ## Matriz de cierre
 
@@ -230,9 +230,9 @@ Queda repetir el recorrido completo con la SPA en navegador, ensayar la defensa,
 | L3, A4 | Newman comprobó las operaciones de cotización y el cierre con instalación. Denilson ejecutó además una prueba local de precio histórico contra MySQL que cubrió cambios de catálogo, cantidad y desactivación. | Repetir desde la interfaz el cambio de precio del catálogo y la consulta de la cotización anterior. |
 | L4, L5, L7, A3 | Se verificaron mensajes de duplicados, alcance por equipo, integración de asignación, cupo y toma simultánea. Denilson obtuvo dos casos y 26 aserciones en la regresión de liberación. | |
 | L6, A6 | El equipo informó que los resultados de vendedor, equipo, empresa y productos coincidieron con la tabla de control. | |
-| A1, A2, A7 | El login y el formato de errores pasaron en Express. Denilson informó nueve pruebas locales aprobadas de permisos HTTP con MySQL, que incluyeron `401`, `403` y `404`. La invalidación de un token anterior también tiene una prueba HTTP con usuarios en memoria. | Vencimiento, firma alterada y pérdida de sesión en el navegador con MySQL. |
+| A1, A2, A7 | El login y el formato de errores pasaron en Express. Denilson informó nueve pruebas locales aprobadas de permisos HTTP con MySQL. El ensayo final comprobó que desactivar a Valeria desde Laravel invalida su token y el navegador vuelve al inicio de sesión. | Pruebas con vencimiento y firma alterada sobre la conexión real. |
 | A5, A8 | Newman pasó 36 peticiones y 74 aserciones, incluyendo actividades y la regla del taller. | |
-| F1–F6 | Se revisaron pantallas con API simulada. Denilson comprobó el ingreso real, el error junto a cantidad y la conservación del formulario al detener la API. El recorrido de asignación a reporte pasó por HTTP. | Repetir el recorrido integrado con el navegador y el diseño actualizado, incluyendo móvil, teclado, actividades y respuestas `401` y `409`. |
+| F1–F6 | El ensayo en Chromium con MySQL real cubrió ingreso, cartera, cotización, reporte y actividades. Pasaron los casos `401`, `409` y `422`, y se comprobó el ancho de 375 px en el reporte, la cartera y la cotización cerrada. | Completar la revisión de navegación por teclado y de las demás pantallas a 375 px. |
 | S1–S4 | Hash generado en PHP y verificado en Node. Solo se versionan los `.env.example`. Pasaron las pruebas de búsqueda con entrada de inyección y de respuesta pública del login. | |
 | S5–S8 | Se comprobó `404` para recursos ajenos, origen CORS en pruebas HTTP, escape en una prueba de interfaz simulada y concurrencia con MySQL. | Repetir escape y CORS desde un navegador conectado a la API real. |
 | P1, P2, P4, P5 | `spec-v1` precede al código. El plan enlaza aportes comprobables en Git. Están incluidos `AGENTS.md` y la bitácora de tres incidentes con sus commits. | El cambio del catedrático requiere el texto publicado en el aula para documentarlo e implementarlo. |
@@ -241,3 +241,19 @@ Queda repetir el recorrido completo con la SPA en navegador, ensayar la defensa,
 ### Revisión del código en `c41c6be`
 
 El 9 de noviembre se repitieron las pruebas de Node sin MySQL desde una copia limpia de GitHub. Pasaron 14 y se omitieron las dos integraciones que requieren MySQL. También se instaló el frontend de Laravel desde su archivo lock y Vite compiló sus recursos correctamente. Los resultados de PHP y MySQL de los apartados anteriores corresponden a las ejecuciones en Windows.
+
+## Ensayo final del 9 de noviembre de 2026
+
+Se probó el código del commit `722b3c6bd8142a829bc7830067eab5052dc23a06` en una copia aislada con Node 24.22.1, PHP 8.4.27 y MySQL 8.4.13. Se usó una base con solo `VerificacionSeeder` para las cifras de control y el navegador, y otra con ambas semillas para la regla del taller y la colección de Postman.
+
+| Comprobación | Resultado |
+|---|---|
+| Migraciones y semillas | Se aplicaron las cinco migraciones en cada base. Se cargó `VerificacionSeeder` en la primera y ambas semillas en la segunda. |
+| API | Pasaron 14 pruebas base y, por separado, las dos integraciones de MySQL. La primera comprobó los conteos, el resumen de Valeria, el cupo, los duplicados y las transiciones simultáneas. La segunda rechazó ganar sin instalación y aceptó el cierre al añadir el servicio. |
+| Laravel | Pasaron 9 pruebas y 40 aserciones con MySQL habilitado para los dos casos de liberación concurrente. Las vistas Blade y los recursos de Vite compilaron correctamente. |
+| Postman con Newman | Pasaron 36 peticiones y 74 aserciones, sin fallos. |
+| Reporte de control en Chromium | Sergio vio 3 ventas por Q15,250.00 y un pronóstico de Q2,625.38 en octubre de 2026. |
+| Panel, portal y reporte | Sergio asignó un cliente desde Laravel. Valeria lo vio en su cartera, creó una cotización de Q1,200.00 y la ganó con cinco entradas de historial. El reporte del mes del cierre aumentó en una venta y Q1,200.00. |
+| Permisos y formularios | El cliente de otro vendedor respondió `404`. Una toma rechazada con `409` conservó el nombre y teléfono del borrador. La cantidad cero devolvió `422`, conservó el valor escrito y mostró el error junto al campo. |
+| Actividades y sesión | Una actividad para las 09:00 de Guatemala se guardó a las 15:00 UTC y pudo completarse desde el portal. Al desactivar a Valeria desde el panel, la siguiente consulta devolvió `401`, se eliminó la sesión y reapareció el inicio de sesión. |
+| Ancho móvil | El reporte de Sergio, la cartera y el detalle de la cotización cerrada se comprobaron a 375 px, sin desbordamiento horizontal. |
